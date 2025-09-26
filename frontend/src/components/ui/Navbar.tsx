@@ -1,17 +1,24 @@
-"use client";
+// src/components/ui/Navbar.tsx
+'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
+import { useFlowAuth } from '@/hooks/useFlowAuth';
 
 export default function Navbar() {
-  const [isConnected, setIsConnected] = useState(false);
-  const [balance] = useState("$1,500");
+  const { user, isLoggedIn, logIn, isLoading } = useFlowAuth();
 
-  const handleConnectWallet = () => {
-    setIsConnected(!isConnected);
+  const handleConnectWallet = async () => {
+    if (!isLoggedIn) {
+      await logIn();
+    }
+  };
+
+  const formatAddress = (address: string) => {
+    return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
 
   return (
-    <nav className="bg-transparent border-b border-gray-900">
+    <nav className="bg-transparent">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -23,37 +30,40 @@ export default function Navbar() {
           </div>
 
           {/* Center Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
-            <button className="text-white hover:text-orange-400 text-sm font-medium transition-colors duration-200">
+          <div className="flex items-center space-x-8">
+            <button className="text-gray-400 hover:text-white text-sm font-medium transition-colors duration-200">
+              Dashboard
+            </button>
+            <button className="text-gray-400 hover:text-white text-sm font-medium transition-colors duration-200">
               Markets
             </button>
             <button className="text-gray-400 hover:text-white text-sm font-medium transition-colors duration-200">
               Leaderboards
             </button>
-            <button className="text-gray-400 hover:text-white text-sm font-medium transition-colors duration-200">
-              Portfolio
-            </button>
           </div>
 
-          {/* Right Side */}
+          {/* Connect Wallet Button */}
           <div className="flex items-center space-x-4">
-            {isConnected && (
-              <div className="hidden sm:flex items-center space-x-2 bg-gray-900 px-3 py-2 rounded-lg">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span className="text-white text-sm font-medium">{balance}</span>
+            {isLoggedIn ? (
+              <div className="flex items-center space-x-3">
+                <div className="bg-gray-800 px-3 py-2 rounded-lg">
+                  <span className="text-sm text-gray-300">
+                    {user.addr ? formatAddress(user.addr) : 'Connected'}
+                  </span>
+                </div>
+                <div className="w-8 h-8 bg-gradient-to-br from-green-400 to-blue-500 rounded-full flex items-center justify-center">
+                  <div className="w-3 h-3 bg-green-400 rounded-full"></div>
+                </div>
               </div>
+            ) : (
+              <button
+                onClick={handleConnectWallet}
+                disabled={isLoading}
+                className="bg-gradient-to-r from-orange-400 to-yellow-500 hover:from-orange-500 hover:to-yellow-600 text-black px-6 py-2 rounded-full text-sm font-semibold transition-all duration-200 disabled:opacity-50"
+              >
+                {isLoading ? 'Connecting...' : 'Connect Wallet'}
+              </button>
             )}
-            
-            <button 
-              onClick={handleConnectWallet}
-              className={`px-6 py-2 rounded-full text-sm font-semibold transition-all duration-200 ${
-                isConnected 
-                  ? "bg-gray-800 hover:bg-gray-700 text-white border border-gray-700"
-                  : "bg-gradient-to-r from-orange-400 to-yellow-500 hover:from-orange-500 hover:to-yellow-600 text-black"
-              }`}
-            >
-              {isConnected ? "Connected" : "Connect Wallet"}
-            </button>
           </div>
         </div>
       </div>
